@@ -1,3 +1,4 @@
+// 🔹 Recipe data
 const recipes = [
     {
         id: 1,
@@ -5,7 +6,7 @@ const recipes = [
         time: 25,
         difficulty: "easy",
         description: "A creamy Italian pasta dish made with eggs, cheese, pancetta, and black pepper.",
-        category: "pasta"
+        category: "pasta",
     },
     {
         id: 2,
@@ -13,7 +14,7 @@ const recipes = [
         time: 45,
         difficulty: "medium",
         description: "Tender chicken pieces in a creamy, spiced tomato sauce.",
-        category: "curry"
+        category: "curry",
     },
     {
         id: 3,
@@ -21,7 +22,7 @@ const recipes = [
         time: 180,
         difficulty: "hard",
         description: "Buttery, flaky French pastries that require patience but deliver amazing results.",
-        category: "baking"
+        category: "baking",
     },
     {
         id: 4,
@@ -29,7 +30,7 @@ const recipes = [
         time: 15,
         difficulty: "easy",
         description: "Fresh vegetables, feta cheese, and olives tossed in olive oil and herbs.",
-        category: "salad"
+        category: "salad",
     },
     {
         id: 5,
@@ -37,7 +38,7 @@ const recipes = [
         time: 120,
         difficulty: "hard",
         description: "Tender beef fillet coated with mushroom duxelles and wrapped in puff pastry.",
-        category: "meat"
+        category: "meat",
     },
     {
         id: 6,
@@ -45,7 +46,7 @@ const recipes = [
         time: 20,
         difficulty: "easy",
         description: "Colorful mixed vegetables cooked quickly in a savory sauce.",
-        category: "vegetarian"
+        category: "vegetarian",
     },
     {
         id: 7,
@@ -53,7 +54,7 @@ const recipes = [
         time: 30,
         difficulty: "medium",
         description: "Thai stir-fried rice noodles with shrimp, peanuts, and tangy tamarind sauce.",
-        category: "noodles"
+        category: "noodles",
     },
     {
         id: 8,
@@ -61,201 +62,127 @@ const recipes = [
         time: 60,
         difficulty: "medium",
         description: "Classic Italian pizza with fresh mozzarella, tomatoes, and basil.",
-        category: "pizza"
+        category: "pizza",
     },
 ];
 
-// DOM Selection - Get the container where recipes will be displayed
-const recipeContainer = document.querySelector('#recipe-container');
-let currentFilter = 'all';
-let currentSort = 'none';
+// 🔹 STATE (Part 2)
+let currentFilter = "all";
+let currentSort = "none";
 
-// NEW: Select all filter and sort buttons
-const filterButtons = document.querySelectorAll('.filter-btn');
-const sortButtons = document.querySelectorAll('.sort-btn');
+// 🔹 DOM Selection
+const recipeContainer = document.querySelector("#recipe-container");
+const filterButtons = document.querySelectorAll("[data-filter]");
+const sortButtons = document.querySelectorAll("[data-sort]");
 
-// Function to create HTML for a single recipe card
-const createRecipeCard = (recipe) => {
-    return `
-        <div class="recipe-card" data-id="${recipe.id}">
-            <h3>${recipe.title}</h3>
-            <div class="recipe-meta">
-                <span>⏱️ ${recipe.time} min</span>
-                <span class="difficulty ${recipe.difficulty}">${recipe.difficulty}</span>
-            </div>
-            <p>${recipe.description}</p>
+// 🔹 Create Recipe Card
+const createRecipeCard = (recipe) => `
+    <div class="recipe-card">
+        <h3>${recipe.title}</h3>
+        <div class="recipe-meta">
+            <span>⏱️ ${recipe.time} min</span>
+            <span class="difficulty ${recipe.difficulty}">
+                ${recipe.difficulty}
+            </span>
         </div>
-    `;
-};
+        <p>${recipe.description}</p>
+    </div>
+`;
 
-// ============================================
-// PURE FILTER FUNCTIONS
-// ============================================
-// These functions don't modify the original array
-// They return a NEW filtered array
-
-// Filter recipes by difficulty level
-const filterByDifficulty = (recipes, difficulty) => {
-    return recipes.filter(recipe => recipe.difficulty === difficulty);
-};
-
-// Filter recipes by maximum cooking time
-const filterByTime = (recipes, maxTime) => {
-    return recipes.filter(recipe => recipe.time <= maxTime);
-};
-
-// Apply the current filter
-const applyFilter = (recipes, filterType) => {
-    switch(filterType) {
-        case 'easy':
-            return filterByDifficulty(recipes, 'easy');
-        case 'medium':
-            return filterByDifficulty(recipes, 'medium');
-        case 'hard':
-            return filterByDifficulty(recipes, 'hard');
-        case 'quick':
-            return filterByTime(recipes, 30);
-        case 'all':
-        default:
-            return recipes;  // Return all recipes (no filter)
-    }
-};
-
-// ============================================
-// PURE SORT FUNCTIONS
-// ============================================
-// sort() mutates the original array, so we create a copy first
-
-// Sort recipes by name (A-Z)
-const sortByName = (recipes) => {
-    // Create a copy with spread operator, then sort
-    return [...recipes].sort((a, b) => a.title.localeCompare(b.title));
-};
-
-// Sort recipes by cooking time (fastest first)
-const sortByTime = (recipes) => {
-    // Create a copy with spread operator, then sort
-    return [...recipes].sort((a, b) => a.time - b.time);
-};
-
-// Apply the current sort
-const applySort = (recipes, sortType) => {
-    switch(sortType) {
-        case 'name':
-            return sortByName(recipes);
-        case 'time':
-            return sortByTime(recipes);
-        case 'none':
-        default:
-            return recipes;  // Return as-is (no sorting)
-    }
-};
-
-// Function to render recipes to the DOM
+// 🔹 Render Recipes
 const renderRecipes = (recipesToRender) => {
-    const recipeCardsHTML = recipesToRender
+    recipeContainer.innerHTML = recipesToRender
         .map(createRecipeCard)
-        .join('');
-    
-    recipeContainer.innerHTML = recipeCardsHTML;
+        .join("");
 };
-renderRecipes(recipes);
-// Set up event listeners on page load
-setupEventListeners();
 
-// Initial render with default filter/sort
-updateDisplay();
+// 🔹 PURE FILTER FUNCTIONS
+const filterByDifficulty = (recipes, level) =>
+    recipes.filter(recipe => recipe.difficulty === level);
 
-// ============================================
-// MAIN UPDATE FUNCTION
-// ============================================
-// This function combines filter + sort + render
+const filterByTime = (recipes, maxTime) =>
+    recipes.filter(recipe => recipe.time < maxTime);
 
+const applyFilter = (recipes, filterType) => {
+    switch (filterType) {
+        case "easy":
+            return filterByDifficulty(recipes, "easy");
+        case "medium":
+            return filterByDifficulty(recipes, "medium");
+        case "hard":
+            return filterByDifficulty(recipes, "hard");
+        case "quick":
+            return filterByTime(recipes, 30);
+        default:
+            return recipes;
+    }
+};
+
+// 🔹 PURE SORT FUNCTIONS
+const sortByName = (recipes) =>
+    [...recipes].sort((a, b) => a.title.localeCompare(b.title));
+
+const sortByTime = (recipes) =>
+    [...recipes].sort((a, b) => a.time - b.time);
+
+const applySort = (recipes, sortType) => {
+    switch (sortType) {
+        case "name":
+            return sortByName(recipes);
+        case "time":
+            return sortByTime(recipes);
+        default:
+            return recipes;
+    }
+};
+
+// 🔹 UPDATE DISPLAY (FILTER → SORT → RENDER)
 const updateDisplay = () => {
-    // Step 1: Start with all recipes
-    let recipesToDisplay = recipes;
-    
-    // Step 2: Apply current filter
-    recipesToDisplay = applyFilter(recipesToDisplay, currentFilter);
-    
-    // Step 3: Apply current sort
-    recipesToDisplay = applySort(recipesToDisplay, currentSort);
-    
-    // Step 4: Render the filtered and sorted recipes
-    renderRecipes(recipesToDisplay);
-    
-    // Step 5: Log for debugging
-    console.log(`Displaying ${recipesToDisplay.length} recipes (Filter: ${currentFilter}, Sort: ${currentSort})`);
+    let result = recipes;
+    result = applyFilter(result, currentFilter);
+    result = applySort(result, currentSort);
+    renderRecipes(result);
+
+    console.log(
+        `Displaying ${result.length} recipes (Filter: ${currentFilter}, Sort: ${currentSort})`
+    );
 };
 
-// ============================================
-// UI HELPER FUNCTIONS
-// ============================================
-
-// Update which button looks "active"
+// 🔹 ACTIVE BUTTON UI
 const updateActiveButtons = () => {
-    // Update filter buttons
-    filterButtons.forEach(btn => {
-        const filterType = btn.dataset.filter;
-        if (filterType === currentFilter) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-    
-    // Update sort buttons
-    sortButtons.forEach(btn => {
-        const sortType = btn.dataset.sort;
-        if (sortType === currentSort) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
+    filterButtons.forEach(btn =>
+        btn.classList.toggle("active", btn.dataset.filter === currentFilter)
+    );
+
+    sortButtons.forEach(btn =>
+        btn.classList.toggle("active", btn.dataset.sort === currentSort)
+    );
 };
 
-// ============================================
-// EVENT HANDLERS
-// ============================================
-
-// Handle filter button clicks
-const handleFilterClick = (event) => {
-    const filterType = event.target.dataset.filter;
-    
-    // Update state
-    currentFilter = filterType;
-    
-    // Update UI
+// 🔹 EVENT HANDLERS
+const handleFilterClick = (e) => {
+    currentFilter = e.target.dataset.filter;
     updateActiveButtons();
     updateDisplay();
 };
 
-// Handle sort button clicks
-const handleSortClick = (event) => {
-    const sortType = event.target.dataset.sort;
-    
-    // Update state
-    currentSort = sortType;
-    
-    // Update UI
+const handleSortClick = (e) => {
+    currentSort = e.target.dataset.sort;
     updateActiveButtons();
     updateDisplay();
 };
-// ============================================
-// EVENT LISTENER SETUP
-// ============================================
 
+// 🔹 EVENT LISTENERS
 const setupEventListeners = () => {
-    // Attach click handlers to all filter buttons
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', handleFilterClick);
-    });
-    
-    // Attach click handlers to all sort buttons
-    sortButtons.forEach(btn => {
-        btn.addEventListener('click', handleSortClick);
-    });
-    
-    console.log('Event listeners attached!');
+    filterButtons.forEach(btn =>
+        btn.addEventListener("click", handleFilterClick)
+    );
+
+    sortButtons.forEach(btn =>
+        btn.addEventListener("click", handleSortClick)
+    );
 };
+
+// 🔹 INITIALIZE APP
+setupEventListeners();
+updateDisplay();
